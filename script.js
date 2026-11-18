@@ -43,7 +43,7 @@
             F: [4, 1, 2, 6, 7],
             G: [3, 4, 7, 5, 6]
         };
-
+        const maxCloudBackgroundImageBytes = 1.5 * 1024 * 1024;
         const storageKey = "classTimerData.v2";
         const legacyStorageKey = "classTimerProfiles.v1";
         const defaultSettings = {
@@ -201,10 +201,9 @@
                 ? settings.accentColor
                 : "";
             const backgroundImage = typeof settings.backgroundImage === "string"
-                && settings.backgroundImage.length <= 2100000
-                && /^data:image\/(?:png|jpeg|webp|gif);base64,[\da-z+/]+=*$/i.test(settings.backgroundImage)
-                ? settings.backgroundImage
-                : "";
+    && /^data:image\/(?:png|jpeg|webp|gif);base64,[\da-z+/]+=*$/i.test(settings.backgroundImage)
+    ? settings.backgroundImage
+    : "";
             const rotationStartDate = isValidDateString(settings.rotationStartDate)
                 ? settings.rotationStartDate
                 : "";
@@ -304,15 +303,33 @@
                 accountUI.description.textContent = "Sign in to sync your profiles and settings across devices. The timer always works locally without an account.";
             }
         }
+        function dataUrlByteSize(dataUrl) {
+    if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:")) {
+        return 0;
+    }
 
+    const base64 = dataUrl.split(",")[1] || "";
+    const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+
+    return Math.floor(base64.length * 3 / 4) - padding;
+}
         function currentDataSnapshot() {
-            return {
-                profiles,
-                activeProfileId,
-                manualRotationDay,
-                settings: appSettings
-            };
+    const backgroundImageIsLocalOnly =
+        dataUrlByteSize(appSettings.backgroundImage) > maxCloudBackgroundImageBytes;
+
+    return {
+        profiles,
+        activeProfileId,
+        manualRotationDay,
+        settings: {
+            ...appSettings,
+            backgroundImage: backgroundImageIsLocalOnly
+                ? ""
+                : appSettings.backgroundImage,
+            backgroundImageLocalOnly: backgroundImageIsLocalOnly
         }
+    };
+}
 
         function scheduleCloudSync() {
             if (!supabaseClient || !authUser || suppressCloudSync) return;
@@ -356,7 +373,15 @@
                 ? snapshot.activeProfileId
                 : profiles[0].id;
             manualRotationDay = rotation[snapshot.manualRotationDay] ? snapshot.manualRotationDay : "A";
-            appSettings = normalizeSettings(snapshot.settings || {});
+            const localBackgroundImage = appSettings.backgroundImage;
+const cloudSettings = snapshot.settings || {};
+
+appSettings = normalizeSettings({
+    ...cloudSettings,
+    backgroundImage: cloudSettings.backgroundImageLocalOnly
+        ? localBackgroundImage
+        : cloudSettings.backgroundImage
+});
             cloudUpdatedAt = updatedAt || null;
             cloudDirty = false;
             suppressCloudSync = true;
@@ -965,9 +990,6 @@
             if (!file.type.startsWith("image/")) {
                 throw new Error("Choose an image file.");
             }
-            if (file.size > 1.5 * 1024 * 1024) {
-                throw new Error("Choose an image smaller than 1.5 MB.");
-            }
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.addEventListener("load", () => {
@@ -985,7 +1007,12 @@
         async function chooseBackgroundImage(file) {
             try {
                 pendingBackgroundImage = await readBackgroundImage(file);
-                ui.backgroundName.textContent = file.name;
+
+const isLocalOnly = file.size > maxCloudBackgroundImageBytes;
+
+ui.backgroundName.textContent = isLocalOnly
+    ? `${file.name} (local only)`
+    : file.name;
                 ui.settingsError.textContent = "";
                 ui.settingsError.classList.remove("visible");
                 previewSettings();
@@ -1013,7 +1040,13 @@
             const saved = saveData();
             ui.settingsDialog.close();
             settingsBeforeEdit = null;
-            if (saved) showNotice("Appearance settings saved in this browser. Download data.js to keep a portable copy.");
+            if (saved) {
+    if (dataUrlByteSize(appSettings.backgroundImage) > maxCloudBackgroundImageBytes) {
+        showNotice("Appearance settings saved locally. Your background image is too large for cloud syncing, but your other settings will still sync.");
+    } else {
+        showNotice("Appearance settings saved in this browser. Download data.js to keep a portable copy.");
+    }
+}
         }
 
         function cancelSettingsPreview() {

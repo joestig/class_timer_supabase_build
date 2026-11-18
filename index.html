@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101a2b">
+    <title>Class Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="app">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Your school day, at a glance</p>
+                <h1>Class Timer</h1>
+                <p class="topbar-note">Keep all four files together for offline use.</p>
+            </div>
+            <div class="header-actions">
+                <button class="sync-trigger" id="syncButton" type="button" aria-haspopup="dialog" aria-label="Cloud sync and account">
+                    <span class="sync-dot" id="syncDot" aria-hidden="true"></span>
+                    <span id="syncButtonLabel">Local only</span>
+                </button>
+                <button class="settings-trigger" id="settingsButton" type="button" aria-haspopup="dialog">
+                    <span aria-hidden="true">⚙</span>
+                    <span>Settings</span>
+                </button>
+                <div class="profile-menu">
+                    <button class="profile-trigger" id="profileButton" type="button" aria-expanded="false" aria-haspopup="true" aria-controls="profileDropdown">
+                        <span class="profile-avatar" id="profileAvatar">M</span>
+                        <span id="profileButtonName">Me</span>
+                        <span class="profile-chevron" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="profile-dropdown" id="profileDropdown" role="menu" hidden>
+                        <div class="menu-section-label">Switch profile</div>
+                        <div id="profileOptions"></div>
+                        <div class="menu-divider"></div>
+                        <button class="menu-action" id="createProfileButton" type="button" role="menuitem">＋ Create profile</button>
+                        <button class="menu-action" id="editProfileButton" type="button" role="menuitem">Edit current profile</button>
+                        <div class="menu-divider"></div>
+                        <button class="menu-action" id="importButton" type="button" role="menuitem">Import data file…</button>
+                        <button class="menu-action" id="exportButton" type="button" role="menuitem">Download data.js</button>
+                        <input class="visually-hidden" id="profileFile" type="file" accept=".js,.json,text/javascript,application/json">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="layout">
+            <section class="card dashboard" aria-label="Class timer and schedule">
+                <div class="dashboard-top">
+                    <h2>Today’s schedule</h2>
+                </div>
+                <div class="notice" id="notice" role="status"></div>
+                <div class="dashboard-content">
+                    <section class="timer-column" aria-labelledby="timerHeading">
+                        <h3 class="column-heading" id="timerHeading">Class timer</h3>
+                        <div class="clock-row">
+                            <span class="clock-label">Local time</span>
+                            <time id="clock">Loading…</time>
+                        </div>
+
+                        <div class="controls">
+                            <div class="field">
+                                <label for="schedule">Bell schedule</label>
+                                <select id="schedule">
+                                    <option value="regular">Regular day</option>
+                                    <option value="partial">Partial day</option>
+                                    <option value="delay">90-minute delay</option>
+                                    <option value="evacuation">Evacuation drill</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="day">Rotation day</label>
+                                <select id="day">
+                                    <option value="A">A Day</option>
+                                    <option value="B">B Day</option>
+                                    <option value="C">C Day</option>
+                                    <option value="D">D Day</option>
+                                    <option value="E">E Day</option>
+                                    <option value="F">F Day</option>
+                                    <option value="G">G Day</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="rotation-note" id="rotationNote" hidden></div>
+
+                        <div class="timer-stage" aria-live="polite">
+                            <span class="status-pill" id="statusPill">CHECKING SCHEDULE</span>
+                            <div id="period">Loading…</div>
+                            <div id="nextperiod"></div>
+                            <div id="timer">--:--</div>
+                            <p id="message"></p>
+                            <div class="progress-wrap" id="progressWrap" hidden>
+                                <div class="progress-label">
+                                    <span id="progressCaption">Class progress</span>
+                                    <span id="progressPercent">0%</span>
+                                </div>
+                                <div class="progress-track" id="progressTrack" role="progressbar" aria-label="Class progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="class-statuses">
+                            <div class="class-status">
+                                <span class="class-status-label">Current class</span>
+                                <span class="class-status-value" id="yourCurrent">Loading…</span>
+                            </div>
+                            <div class="class-status">
+                                <span class="class-status-label">Next class</span>
+                                <span class="class-status-value" id="yourNext">Loading…</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="schedule-column" aria-labelledby="scheduleHeading">
+                        <h3 class="column-heading" id="scheduleHeading">Full schedule · <span id="profileTitle">Me</span></h3>
+                        <div class="schedule-section">
+                            <ol class="class-list" id="classList"></ol>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </div>
+
+        <dialog id="accountDialog" aria-labelledby="accountDialogTitle">
+            <form id="accountForm">
+                <div class="dialog-header">
+                    <h2 id="accountDialogTitle">Cloud sync</h2>
+                    <button class="close-button" id="closeAccountButton" type="button" aria-label="Close account dialog">×</button>
+                </div>
+                <div class="dialog-body">
+                    <p class="dialog-description" id="accountDescription">Use an account to sync your profiles and settings across devices. The timer always works locally without signing in.</p>
+                    <div id="accountSignedOut">
+                        <div class="field editor-name">
+                            <label for="accountEmail">Email address</label>
+                            <input id="accountEmail" name="email" type="email" autocomplete="email" maxlength="254" required>
+                        </div>
+                        <div class="field editor-name">
+                            <label for="accountPassword">Password</label>
+                            <input id="accountPassword" name="password" type="password" autocomplete="current-password" minlength="8" required>
+                        </div>
+                        <div class="account-actions">
+                            <button class="button primary" id="signInButton" type="button">Sign in</button>
+                            <button class="button" id="signUpButton" type="button">Create account</button>
+                        </div>
+                    </div>
+                    <div id="accountSignedIn" hidden>
+                        <p class="account-user" id="accountUserEmail"></p>
+                        <p class="dialog-description">Your profiles and settings are linked to this account. This browser also keeps a local copy for offline use.</p>
+                        <button class="button" id="signOutButton" type="button">Sign out</button>
+                    </div>
+                    <p class="dialog-error" id="accountError" role="alert"></p>
+                    <p class="account-help" id="accountHelp">Your password is handled by Supabase authentication and is never stored by this app.</p>
+                </div>
+            </form>
+        </dialog>
+
+        <dialog id="profileDialog" aria-labelledby="dialogTitle">
+            <form id="profileForm">
+                <div class="dialog-header">
+                    <h2 id="dialogTitle">Create profile</h2>
+                    <button class="close-button" id="closeDialogButton" type="button" aria-label="Close">×</button>
+                </div>
+                <div class="dialog-body">
+                    <p class="dialog-description">Enter a name and the classes for each period. Changes are saved in this browser automatically. Sign in to sync your private profiles across devices.</p>
+                    <div class="field editor-name">
+                        <label for="profileNameInput">Profile name</label>
+                        <input id="profileNameInput" name="profileName" type="text" maxlength="40" autocomplete="off" required>
+                    </div>
+                    <div class="class-editor" id="classEditor"></div>
+                    <p class="dialog-error" id="dialogError" role="alert"></p>
+                </div>
+                <div class="dialog-footer">
+                    <button class="button" id="cancelDialogButton" type="button">Cancel</button>
+                    <button class="button primary" id="saveProfileButton" type="submit">Save profile</button>
+                </div>
+            </form>
+        </dialog>
+
+        <dialog id="settingsDialog" aria-labelledby="settingsDialogTitle">
+            <form id="settingsForm">
+                <div class="dialog-header">
+                    <h2 id="settingsDialogTitle">Settings & appearance</h2>
+                    <button class="close-button" id="closeSettingsButton" type="button" aria-label="Close settings">×</button>
+                </div>
+                <div class="dialog-body">
+                    <p class="dialog-description">Choose a look and layout for your timer. Settings are saved in this browser and synced to your private account when cloud sync is enabled.</p>
+                    <div class="settings-grid">
+                        <div class="field">
+                            <label for="themeSelect">Color theme</label>
+                            <select id="themeSelect" name="theme">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                                <option value="lavender">Lavender</option>
+                                <option value="forest">Forest</option>
+                                <option value="ocean">Ocean</option>
+                                <option value="sunset">Sunset</option>
+                                <option value="midnight">Midnight</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="layoutSelect">Dashboard layout</label>
+                            <select id="layoutSelect" name="layout">
+                                <option value="balanced">Balanced</option>
+                                <option value="timer-focus">Timer focus</option>
+                                <option value="schedule-focus">Schedule focus</option>
+                                <option value="stacked">Stacked</option>
+                            </select>
+                        </div>
+                        <div class="field accent-field">
+                            <label for="accentColor">Custom accent color</label>
+                            <div class="accent-control">
+                                <label class="checkbox-label" for="customAccentEnabled">
+                                    <input id="customAccentEnabled" type="checkbox">
+                                    Use a custom color
+                                </label>
+                                <input id="accentColor" name="accentColor" type="color" value="#4268e8" aria-label="Custom accent color">
+                            </div>
+                        </div>
+                        <label class="setting-toggle">
+                            <input id="autoRotationEnabled" type="checkbox">
+                            <span>
+                                <strong>Automatically advance rotation days</strong>
+                                <small>Advance once per weekday from a date and rotation day you choose. Weekends are skipped; holidays are not included.</small>
+                            </span>
+                        </label>
+                        <div class="rotation-settings" id="rotationSettings" hidden>
+                            <div class="field">
+                                <label for="rotationStartDay">Rotation day on start date</label>
+                                <select id="rotationStartDay">
+                                    <option value="A">A Day</option>
+                                    <option value="B">B Day</option>
+                                    <option value="C">C Day</option>
+                                    <option value="D">D Day</option>
+                                    <option value="E">E Day</option>
+                                    <option value="F">F Day</option>
+                                    <option value="G">G Day</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="rotationStartDate">Start date</label>
+                                <input id="rotationStartDate" type="date">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="fontSizeSelect">Text size</label>
+                            <select id="fontSizeSelect">
+                                <option value="normal">Comfortable</option>
+                                <option value="large">Larger</option>
+                                <option value="compact">Compact</option>
+                            </select>
+                        </div>
+                        <label class="setting-toggle">
+                            <input id="reducedMotionEnabled" type="checkbox">
+                            <span>
+                                <strong>Reduce motion</strong>
+                                <small>Turn off most animated transitions.</small>
+                            </span>
+                        </label>
+                        <div class="field background-field">
+                            <label for="backgroundImage">Background picture</label>
+                            <input id="backgroundImage" name="backgroundImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+                            <div class="background-file-row">
+                                <span id="backgroundName">No picture selected</span>
+                                <button class="button" id="clearBackgroundButton" type="button">Remove</button>
+                            </div>
+                            <small>Images up to 1.5 MB are saved inside data.js with your settings.</small>
+                        </div>
+                    </div>
+                    <p class="settings-shortcut-hint">Preview themes and layouts by changing them here. The page updates immediately; Cancel restores saved settings.</p>
+                    <p class="dialog-error" id="settingsError" role="alert"></p>
+                </div>
+                <div class="dialog-footer">
+                    <button class="button" id="resetSettingsButton" type="button">Reset appearance</button>
+                    <button class="button" id="cancelSettingsButton" type="button">Cancel</button>
+                    <button class="button primary" id="saveSettingsButton" type="submit">Save settings</button>
+                </div>
+            </form>
+        </dialog>
+
+        <dialog id="shortcutsDialog" aria-labelledby="shortcutsTitle">
+            <div class="dialog-header">
+                <h2 id="shortcutsTitle">Keyboard shortcuts</h2>
+                <button class="close-button" id="closeShortcutsButton" type="button" aria-label="Close shortcuts">×</button>
+            </div>
+            <div class="dialog-body">
+                <p class="dialog-description">Shortcuts are disabled while typing in a field.</p>
+                <dl class="shortcut-list">
+                    <div><dt>Alt + Shift + S</dt><dd>Open settings</dd></div>
+                    <div><dt>Alt + Shift + T</dt><dd>Cycle themes</dd></div>
+                    <div><dt>Alt + Shift + L</dt><dd>Cycle layouts</dd></div>
+                    <div><dt>Alt + Shift + P</dt><dd>Switch to the next profile</dd></div>
+                    <div><dt>Alt + Shift + D</dt><dd>Cycle manual rotation days (when auto rotation is off)</dd></div>
+                    <div><dt>?</dt><dd>Show this shortcut guide</dd></div>
+                    <div><dt>Esc</dt><dd>Close menus and dialogs</dd></div>
+                </dl>
+            </div>
+            <div class="dialog-footer">
+                <button class="button primary" id="dismissShortcutsButton" type="button">Done</button>
+            </div>
+        </dialog>
+        <button class="shortcut-hint" id="shortcutHint" type="button" aria-label="Show keyboard shortcuts">?</button>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -540,74 +540,116 @@
             --image-overlay: rgba(14, 12, 24, .76);
             --shadow: 0 18px 50px rgba(0, 0, 0, .28);
         }
-        :root[data-theme="clear"] {
+        /* CLEAR THEME — FROSTED GLASS */
+:root[data-theme="clear"] {
     color-scheme: light;
 
     --ink: #172338;
     --muted: #52647b;
     --line: rgba(255, 255, 255, .48);
 
-    /* Main transparent surfaces */
-    --paper: rgba(255, 255, 255, .62);
+    --paper: rgba(255, 255, 255, .38);
     --canvas: #dce7f3;
-    --surface-soft: rgba(255, 255, 255, .38);
-
     --navy: rgba(16, 26, 43, .78);
 
     --blue: #4268e8;
     --blue-dark: #3154ce;
 
     --green: #157b55;
-    --green-soft: rgba(232, 246, 239, .72);
-    --green-line: rgba(191, 228, 210, .8);
+    --green-soft: rgba(215, 245, 229, .48);
+    --green-line: rgba(139, 207, 170, .65);
 
-    --blue-line: rgba(203, 214, 255, .8);
-    --blue-soft: rgba(234, 240, 255, .65);
+    --blue-line: rgba(160, 185, 255, .6);
+    --surface-soft: rgba(255, 255, 255, .25);
 
-    --stage-bg: linear-gradient(
-        145deg,
-        rgba(255, 255, 255, .58),
-        rgba(235, 243, 255, .38)
-    );
+    --stage-bg: rgba(255, 255, 255, .25);
+    --soft-hover: rgba(255, 255, 255, .55);
+    --blue-soft: rgba(220, 230, 255, .55);
 
-    --soft-hover: rgba(255, 255, 255, .72);
-
-    /* Let the background image show through */
-    --image-overlay: rgba(245, 248, 255, .16);
+    /* Let the actual background image show through */
+    --image-overlay: rgba(245, 248, 255, .20);
 
     --shadow: 0 18px 50px rgba(20, 35, 60, .12);
 }
 
-/* Glass effect on the main dashboard surfaces */
-:root[data-theme="clear"] .card,
-:root[data-theme="clear"] .timer-stage,
-:root[data-theme="clear"] .class-status,
-:root[data-theme="clear"] .class-list li,
-:root[data-theme="clear"] .profile-dropdown,
-:root[data-theme="clear"] .profile-trigger,
-:root[data-theme="clear"] .settings-trigger,
-:root[data-theme="clear"] .sync-trigger,
-:root[data-theme="clear"] .button,
-:root[data-theme="clear"] select {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
-/* Make the clock panel slightly transparent too */
-:root[data-theme="clear"] .clock-row {
-    background: rgba(16, 26, 43, .76);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
-/* Give the dashboard card a softer glass border */
+/* Main dashboard glass panel */
 :root[data-theme="clear"] .card {
-    border-color: rgba(255, 255, 255, .58);
+    background: rgba(255, 255, 255, .34);
+    border: 1px solid rgba(255, 255, 255, .58);
+    backdrop-filter: blur(22px) saturate(145%);
+    -webkit-backdrop-filter: blur(22px) saturate(145%);
+    box-shadow: 0 18px 55px rgba(20, 35, 60, .12);
 }
 
-/* Keep the timer area distinct without hiding the picture */
+/* Header buttons and profile controls */
+:root[data-theme="clear"] .sync-trigger,
+:root[data-theme="clear"] .settings-trigger,
+:root[data-theme="clear"] .profile-trigger,
+:root[data-theme="clear"] .profile-dropdown {
+    background: rgba(255, 255, 255, .48);
+    border-color: rgba(255, 255, 255, .65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* Local time panel */
+:root[data-theme="clear"] .clock-row {
+    background: rgba(16, 26, 43, .78);
+    border: 1px solid rgba(255, 255, 255, .2);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* Timer panel */
 :root[data-theme="clear"] .timer-stage {
-    border-color: rgba(255, 255, 255, .55);
+    background: rgba(255, 255, 255, .25);
+    border: 1px solid rgba(255, 255, 255, .55);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* Schedule rows */
+:root[data-theme="clear"] .class-list li {
+    background: rgba(255, 255, 255, .27);
+    border-color: rgba(255, 255, 255, .30);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+:root[data-theme="clear"] .class-list li.active {
+    background: rgba(180, 235, 205, .42);
+    border-color: rgba(139, 207, 170, .65);
+}
+
+:root[data-theme="clear"] .class-list li.upcoming {
+    background: rgba(195, 210, 255, .42);
+    border-color: rgba(160, 185, 255, .6);
+}
+
+/* Other dashboard controls */
+:root[data-theme="clear"] .class-status,
+:root[data-theme="clear"] select,
+:root[data-theme="clear"] .button,
+:root[data-theme="clear"] .empty-schedule {
+    background: rgba(255, 255, 255, .30);
+    border-color: rgba(255, 255, 255, .52);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Hover effects */
+:root[data-theme="clear"] .button:hover,
+:root[data-theme="clear"] .sync-trigger:hover,
+:root[data-theme="clear"] .settings-trigger:hover,
+:root[data-theme="clear"] .profile-trigger:hover {
+    background: rgba(255, 255, 255, .62);
+}
+
+/* Keep the notification readable */
+:root[data-theme="clear"] .notice {
+    background: rgba(255, 248, 233, .78);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
         :root[data-font-size="large"] { font-size: 18px; }

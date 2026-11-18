@@ -76,7 +76,7 @@
         const bundledData = getBundledData();
         const dataFileMissing = bundledData === fallbackData;
         const dataSourceSignature = JSON.stringify(bundledData);
-        const themeNames = ["light", "dark", "lavender", "forest", "ocean", "sunset", "midnight"];
+        const themeNames = ["light", "dark", "lavender", "forest", "ocean", "sunset", "midnight", "clear"];
         const layoutNames = ["balanced", "timer-focus", "schedule-focus", "stacked"];
         const ui = {
             schedule: document.getElementById("schedule"),
